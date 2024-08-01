@@ -1,45 +1,77 @@
+const ProductModel = require('../models/products');
+const ProductJoi = require('../validations/productJoi');
 
 
 
-const ProductModel = require('../models/products')
-//add new product
-const addProduct = async(req,res) =>{
-    const data = req.body
-    const saveData = new ProductModel(data);
-    if(!saveData)throw new console.Error(400,'Insert all data');
-    await saveData.save();
-    res.status(201).send({message:'Data saved successfully'})
+// Add new product
+const addProduct = async (req, res) => {
+    try {
+        const data = req.body;
+        await ProductJoi.validateAsync(data);
+
+        const saveData = new ProductModel(data);
+        await saveData.save();
+
+        res.status(201).send({ message: 'Data saved successfully' });
+    } catch (error) {
+        console.error("Validation Error:", error.details); // Log detailed error
+    res.status(400).send({ message: error.message });
+    }
 }
 
-//get all product
-const getAllProducts = async(req,res) =>{
-   const allData = await ProductModel.find({})
-    res.status(200).send({data:allData, message:'ok'})
-}
-//getby id
-const getProductById = async(req,res) =>{
-    const id = req.params.id
-    const data = await ProductModel.findById(id)
-    res.status(200).send({data:data, message:'ok'})
-}
-//delete product
-const deleteProduct = async(req,res) =>{
-    const id = req.params.id
-    const data = await ProductModel.findByIdAndDelete(id)
-    res.status(200).send({data:data, message:'ok'})
-}
-//update product
-const updateProduct = async(req,res) =>{
-    const id = req.params.id
-    const newData =req.body
-    // const checkData = new ProductModel(newData)
-    const Data = await ProductModel.findByIdAndUpdate(id,newData)
-    res.status(200).send({data:data, message:'ok'})
+// Get all products
+const getAllProducts = async (req, res) => {
+    try {
+        const allData = await ProductModel.find({});
+        res.status(200).send({ data: allData, message: 'ok' });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
 }
 
-module.exports = {addProduct,getAllProducts,getProductById,deleteProduct,updateProduct}
+// Get product by id
+const getProductById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const data = await ProductModel.findById(id);
+        if (!data) {
+            return res.status(404).send({ message: 'Product not found' });
+        }
+        res.status(200).send({ data: data, message: 'ok' });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+}
 
+// Delete product
+const deleteProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const data = await ProductModel.findByIdAndDelete(id);
+        if (!data) {
+            return res.status(404).send({ message: 'Product not found' });
+        }
+        res.status(200).send({ data: data, message: 'ok' });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+}
 
+// Update product
+const updateProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const newData = req.body;
+        await ProductJoi.validateAsync(newData);
 
+        const data = await ProductModel.findByIdAndUpdate(id, newData, { new: true });
+        if (!data) {
+            return res.status(404).send({ message: 'Product not found' });
+        }
+        res.status(200).send({ data: data, message: 'ok' });
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
+}
 
-
+module.exports = { addProduct, getAllProducts, getProductById, deleteProduct, updateProduct };

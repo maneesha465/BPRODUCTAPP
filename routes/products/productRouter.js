@@ -1,5 +1,8 @@
+
+const express = require('express');
 const { addProduct, getAllProducts, updateProduct, deleteProduct, getProductById } = require('../../controllers/productController');
 const asyncHandler = require('../../utils/asyncHandler');
+
 
 const router = require('express').Router();
 //crud
